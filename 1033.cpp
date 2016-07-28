@@ -84,69 +84,31 @@ const long long int mod=1e9+7;
 /* global declaration */
 
 int dp[mx+5][mx+5];
-string a,b;
-vi idx_a[30+5],idx_b[30+5];
+string str;
 
-int lcs(int i, int j)
+int edit_dist(int i, int j)
 {
-    if(i==a.size() || j==b.size()) return 0;
+    if(i>=j) return 0;
 
     int &ret=dp[i][j];
     if(ret!=-1) return ret;
 
-    ret=0;
-    if(a[i]==b[j]) ret=lcs(i+1,j+1)+1;
-    else ret=max(lcs(i+1,j),lcs(i,j+1));
+    if(str[i]==str[j]) ret=edit_dist(i+1,j-1);
+    else ret=min(edit_dist(i+1,j),edit_dist(i,j-1))+1;
 
     return ret;
 }
 
-void print_all_lcs(int i, int j, int k)
-{
-    if(k==0) return;
-    char ch;
-    int ai,bi;
-    for(ch='a'; ch<='z'; ch++)
-    {
-        ai=lower_bound(idx_a[ch-'a'].begin(),idx_a[ch-'a'].end(),i)-idx_a[ch-'a'].begin();
-        bi=lower_bound(idx_b[ch-'a'].begin(),idx_b[ch-'a'].end(),j)-idx_b[ch-'a'].begin();
-        if(ai!=idx_a[ch-'a'].size() && bi!=idx_b[ch-'a'].size())
-        {
-            ai=idx_a[ch-'a'][ai];
-            bi=idx_b[ch-'a'][bi];
-            if(dp[ai][bi]==k)
-            {
-                printf("%c",ch);
-                print_all_lcs(ai+1,bi+1,k-1);
-                break;
-            }
-        }
-    }
-    return;
-}
-
 int main()
 {
-    int t,k,i;
+    int t;
     cin>>t;
     while(t--)
     {
-        getchar();
-        cin>>a>>b;
-        for(i=0; i<=30; i++) idx_a[i].clear(),idx_b[i].clear();
-        for(i=0; i<a.size(); i++) idx_a[a[i]-'a'].pb(i);
-        for(i=0; i<b.size(); i++) idx_b[b[i]-'a'].pb(i);
+        cin>>str;
         setneg(dp);
         tc1(tc++);
-        k=lcs(0,0);
-        if(k==0)
-        {
-            printf(":(");
-            nl;
-            continue;
-        }
-        print_all_lcs(0,0,k);
-        nl;
+        pr1(edit_dist(0,str.size()-1));
     }
     return 0;
 }

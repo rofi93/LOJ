@@ -93,96 +93,100 @@ int dky8[]= {2,2,-2,-2,1,-1,1,-1};
 int tc=1;
 const double eps=1e-9;
 const double pi=acos(-1.0);
-const long long int mx=3e4;
+const long long int mx=1e5;
 const long long int mod=1e9+7;
 /* global declarations */
 
-int tree[4*mx+5];
+struct query
+{
+    int l,r,idx;
+};
+
+query vq[mx+5];
+int block_size;
 int arr[mx+5];
-int R_Idx,L_Idx;
+int ans[mx+5];
+int cnt[mx+5];
+int mp[mx+5];
+int cur_ans;
 
-void build(int node, int begin, int end)
+bool operator<(query A, query B)
 {
-    if(begin==end)
-    {
-        tree[node]=arr[begin];
-        return;
-    }
-    int l,r,mid;
-    l=2*node;
-    r=2*node+1;
-    mid=(begin+end)/2;
-    build(l,begin,mid);
-    build(r,mid+1,end);
-    tree[node]=min(tree[l],tree[r]);
-    return;
+    int a_block=A.l/block_size;
+    int b_block=B.l/block_size;
+
+    if(a_block!=b_block) return a_block<b_block;
+    if(a_block==b_block) return A.r<B.r;
 }
 
-int query_right(int node, int begin, int end, int a, int b, int val)
+void add(int x)
 {
-    if(b<begin || a>end || begin>end || a>b) return INT_MAX;
-    if(begin==end) return tree[node];
-    if(begin>=a && end<=b && tree[node]>=val) return tree[node];
-    int l,r,mid,L=INT_MAX,R=INT_MAX;
-    l=2*node;
-    r=2*node+1;
-    mid=(begin+end)/2;
-    L=query_right(l,begin,mid,a,b,val);
-    if(L>=val && L!=INT_MAX) R=query_right(r,mid+1,end,a,b,val);
-    if(L>=val && L!=INT_MAX) R_Idx=max(R_Idx,mid);
-    if(R>=val && R!=INT_MAX) R_Idx=max(R_Idx,end);
-    //pr2(L,R);
-    return min(L,R);
+    cnt[mp[x]]--;
+    mp[x]++;
+    cnt[mp[x]]++;
+    if(mp[x]>cur_ans) cur_ans=mp[x];
 }
 
-int query_left(int node, int begin, int end, int a, int b, int val)
+void remove(int x)
 {
-    if(b<begin || a>end || begin>end || a>b) return INT_MAX;
-    if(begin==end) return tree[node];
-    if(begin>=a && end<=b && tree[node]>=val) return tree[node];
-    int l,r,mid,L=INT_MAX,R=INT_MAX;
-    l=2*node;
-    r=2*node+1;
-    mid=(begin+end)/2;
-    R=query_left(r,mid+1,end,a,b,val);
-    //pr1(R);
-    if(R>=val && R!=INT_MAX) L=query_left(l,begin,mid,a,b,val);
-    if(R>=val && R!=INT_MAX) L_Idx=min(L_Idx,mid+1);
-    if(L>=val && L!=INT_MAX) L_Idx=min(L_Idx,begin);
-    //pr3(begin,end,L_Idx);
-    //pr2(L,R);
-    return min(L,R);
-}
-
-void reset(void)
-{
-    int i;
-    for(i=0; i<=4*mx; i++) tree[i]=INT_MAX;
-    return;
+    cnt[mp[x]]--;
+    mp[x]--;
+    cnt[mp[x]]++;
+    if(cur_ans==mp[x]+1 && !cnt[mp[x]+1]) cur_ans=mp[x];
 }
 
 int main()
 {
-    int t,n,i,area,l,r;
+    int L,R,i,n,m,c,curL,curR,t;
+    query Q;
     cin>>t;
     while(t--)
     {
-        cin>>n;
-        for(i=1; i<=n; i++) iin(arr[i]);
-        reset();
-        build(1,1,n);
-        area=0;
-        for(i=1; i<=n; i++)
+        cin>>n>>c>>m;
+        for(i=0; i<n; i++) iin(arr[i]);
+        for(i=0; i<m; i++)
         {
-            L_Idx=i;
-            R_Idx=i;
-            query_left(1,1,n,1,i,arr[i]);
-            query_right(1,1,n,i,n,arr[i]);
-            pr3(i,L_Idx,R_Idx);
-            area=max(area,arr[i]*(R_Idx-L_Idx+1));
+            iin(L);
+            iin(R);
+            vq[i].l=L-1;
+            vq[i].r=R-1;
+            vq[i].idx=i;
         }
-        tc1(tc++);
-        pr1(area);
+        block_size=sqrt(n)*2;
+        sort(vq,vq+m);
+        curL=0;
+        curR=-1;
+        cur_ans=0;
+        setzero(mp);
+        setzero(cnt);
+        for(i=0; i<m; i++)
+        {
+            L=vq[i].l;
+            R=vq[i].r;
+            while(curL<L)
+            {
+                remove(arr[curL]);
+                curL++;
+            }
+            while(curL>L)
+            {
+                curL--;
+                add(arr[curL]);
+            }
+            while(curR<R)
+            {
+                curR++;
+                add(arr[curR]);
+            }
+            while(curR>R)
+            {
+                remove(arr[curR]);
+                curR--;
+            }
+            ans[vq[i].idx]=cur_ans;
+        }
+        tc3(tc++);
+        for(i=0; i<m; i++) printf("%d\n",ans[i]);
     }
     return 0;
 }

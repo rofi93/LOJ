@@ -35,7 +35,7 @@
 #define fast          ios::sync_with_stdio(0)
 #define read          freopen("input.txt","r",stdin)
 #define write         freopen("output.txt","w",stdout)
-#define prflag1(flag) printf("%s\n",(flag)?"YES":"NO")
+#define prflag1(flag) printf("%s\n",(flag)?"Alice":"Bob")
 #define prflag2(flag) printf("%s\n",(flag)?"Yes":"No")
 #define prflag3(flag) printf("%s\n",(flag)?"yes":"no")
 /* macro definitions */
@@ -93,96 +93,49 @@ int dky8[]= {2,2,-2,-2,1,-1,1,-1};
 int tc=1;
 const double eps=1e-9;
 const double pi=acos(-1.0);
-const long long int mx=3e4;
+const long long int mx=1e4;
 const long long int mod=1e9+7;
 /* global declarations */
 
-int tree[4*mx+5];
-int arr[mx+5];
-int R_Idx,L_Idx;
+int grundy[mx+5];
+int vis[mx+5];
 
-void build(int node, int begin, int end)
+void find_grundy(void)
 {
-    if(begin==end)
+    int i,j;
+    grundy[0]=0;
+    for(i=1; i<=mx; i++)
     {
-        tree[node]=arr[begin];
-        return;
+        setzero(vis);
+        for(j=1; j+j<i; j++) vis[grundy[j] ^ grundy[i-j]] = 1;
+        for(j=0; j<=mx; j++)
+        {
+            if(!vis[j])
+            {
+                grundy[i] = j;
+                break;
+            }
+        }
     }
-    int l,r,mid;
-    l=2*node;
-    r=2*node+1;
-    mid=(begin+end)/2;
-    build(l,begin,mid);
-    build(r,mid+1,end);
-    tree[node]=min(tree[l],tree[r]);
-    return;
-}
-
-int query_right(int node, int begin, int end, int a, int b, int val)
-{
-    if(b<begin || a>end || begin>end || a>b) return INT_MAX;
-    if(begin==end) return tree[node];
-    if(begin>=a && end<=b && tree[node]>=val) return tree[node];
-    int l,r,mid,L=INT_MAX,R=INT_MAX;
-    l=2*node;
-    r=2*node+1;
-    mid=(begin+end)/2;
-    L=query_right(l,begin,mid,a,b,val);
-    if(L>=val && L!=INT_MAX) R=query_right(r,mid+1,end,a,b,val);
-    if(L>=val && L!=INT_MAX) R_Idx=max(R_Idx,mid);
-    if(R>=val && R!=INT_MAX) R_Idx=max(R_Idx,end);
-    //pr2(L,R);
-    return min(L,R);
-}
-
-int query_left(int node, int begin, int end, int a, int b, int val)
-{
-    if(b<begin || a>end || begin>end || a>b) return INT_MAX;
-    if(begin==end) return tree[node];
-    if(begin>=a && end<=b && tree[node]>=val) return tree[node];
-    int l,r,mid,L=INT_MAX,R=INT_MAX;
-    l=2*node;
-    r=2*node+1;
-    mid=(begin+end)/2;
-    R=query_left(r,mid+1,end,a,b,val);
-    //pr1(R);
-    if(R>=val && R!=INT_MAX) L=query_left(l,begin,mid,a,b,val);
-    if(R>=val && R!=INT_MAX) L_Idx=min(L_Idx,mid+1);
-    if(L>=val && L!=INT_MAX) L_Idx=min(L_Idx,begin);
-    //pr3(begin,end,L_Idx);
-    //pr2(L,R);
-    return min(L,R);
-}
-
-void reset(void)
-{
-    int i;
-    for(i=0; i<=4*mx; i++) tree[i]=INT_MAX;
     return;
 }
 
 int main()
 {
-    int t,n,i,area,l,r;
+    int t,n,x,ans;
+    find_grundy();
     cin>>t;
     while(t--)
     {
         cin>>n;
-        for(i=1; i<=n; i++) iin(arr[i]);
-        reset();
-        build(1,1,n);
-        area=0;
-        for(i=1; i<=n; i++)
+        ans = 0;
+        while(n--)
         {
-            L_Idx=i;
-            R_Idx=i;
-            query_left(1,1,n,1,i,arr[i]);
-            query_right(1,1,n,i,n,arr[i]);
-            pr3(i,L_Idx,R_Idx);
-            area=max(area,arr[i]*(R_Idx-L_Idx+1));
+            iin(x);
+            ans^=grundy[x];
         }
         tc1(tc++);
-        pr1(area);
+        prflag1(ans);
     }
     return 0;
 }

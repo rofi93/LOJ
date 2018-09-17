@@ -120,7 +120,7 @@ void update(int node, int begin, int end, int idx)
 
 int query(int node, int begin, int end, int a, int b)
 {
-    if(b<begin || a>end) return 0;
+    if(b<begin || a>end || a>b) return 0;
     if(begin>=a && end<=b) return tree[node];
     int l,r,mid,L,R;
     l=2*node;
@@ -133,7 +133,9 @@ int query(int node, int begin, int end, int a, int b)
 
 int main()
 {
-    int i,n,q,t,a,b;
+    /*read;
+    write;*/
+    int i,n,q,t,a,b,c;
     char ch[10];
     cin>>t;
     while(t--)
@@ -142,29 +144,34 @@ int main()
         for(i=1; i<=n; i++) iin(arr[i]);
         setzero(tree);
         tc3(tc++);
-        vi store;
+        vector<pii> store;
+        c=n;
         while(q--)
         {
             scanf("%s",ch);
             if(ch[0]=='c')
             {
                 iin(a);
-                store.pb(a);
+                store.pb(pii(a,c));
+                c--;
             }
             else
             {
                 n++;
+                c++;
                 iin(arr[n]);
             }
         }
         for(i=0; i<store.size(); i++)
         {
-            a=store[i];
-            b=query(1,1,n,1,a);
-            if(a+b<=n)
+            a=store[i].first;
+            c=store[i].second;
+            b=query(1,1,n,a,n);
+            pr3(a,c,b);
+            if(a+b<=c)
             {
                 printf("%d\n",arr[a+b]);
-                update(1,1,n,a);
+                update(1,1,n,a+b);
             }
             else
             {
